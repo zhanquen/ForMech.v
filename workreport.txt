@@ -27,7 +27,11 @@ Work report: Rocq/mathcomp port
 - Restored the local O_finType aliases using MathComp 2's [the finType of O] notation for later explicit arguments.
 - Updated remaining MathComp packed-class references from [eqType/finType of ...] to [the eqType/finType of ...] notation.
 - Replaced a removed ordinal_finType reference with 'I_k and simplified two widen_slot_as_agent proof uses after slot_as_agent became definitionally widen_ord.
-- Current build status: nix-shell reaches Rocq 9.1.1/mathcomp 2.5.0 and compiles many modules, but dune build still stops in Search_as_General.v and VCG_Search_as_General_VCG.v at the duplicated bid/ctr equality proof around the former widen_slot_as_agent step.
+- Fixed the duplicated welfare-without-i proof in absvcg/Search_as_General.v and vcg/VCG_Search_as_General_VCG.v around the bid/ctr equality branch: Rocq 9.1 no longer solved the slot_of equality by conversion after congr, so the proof now leaves the bid factor to conversion and proves the ctr slot equality explicitly with slot_in_oStar, val_inj, and inordK.
+- Fixed Rocq 9.1 parsing/type-scope issues in absvcg/Search_properties.v: replaced ambiguous S.O type references with Search_as_General.O where needed, and added %type around the product used to define the finite outcome type O.
+- Fixed the same ambiguous S.O type references in vcg/VCG_Search_properties.v by using VCG_Search_as_General_VCG.O in type annotations and explicit finType arguments.
+- Reworked the singleton surplus proof in vcg/VCG_Search_properties.v: changed ctr1 to inord 1, replaced the old set_nth/tcast-based singleton tuple vw with a direct mktuple definition, made the sumn proof opaque as isCvw, and rewrote eq_surplus through a local cw_i lemma. This avoids Rocq 9.1 dependent rewrite failures caused by unfolding proof components of the C record.
+- Verified build status: nix-shell --run "dune build" succeeds under Rocq 9.1.1 and mathcomp 2.5.0.
 
 How to open and modify this repo
 

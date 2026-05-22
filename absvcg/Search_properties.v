@@ -375,9 +375,9 @@ Notation A2s := (n.-tuple A2).
 
 Definition a2s0 : A2s := mktuple (fun b => S.bid0).
 
-Definition O := [the finType of (S.O * k.-tuple P * A2s)].
+Definition O := [the finType of (Search_as_General.O * k.-tuple P * A2s)%type].
 
-Definition o2o (o : S.O) : O := ((o, mktuple (fun p => ord0)), mktuple (fun b => bid0)).
+Definition o2o (o : Search_as_General.O) : O := ((o, mktuple (fun p => ord0)), mktuple (fun b => bid0)).
 
 Definition o0 : O := o2o o0.
 
@@ -629,7 +629,7 @@ Lemma MRx a1s a2s (acts : (forall i, Ra i (action_on a1s i) (action_on a2s i)))i
 Proof.
 apply/eqP; rewrite eqn_leq; apply/andP; split.
 - apply/bigmax_leqP => o _.
-  have uidxa : forall o : S.O, uniq (map_tuple (fun i => idxa a2s i) o).
+  have uidxa : forall o : Search_as_General.O, uniq (map_tuple (fun i => idxa a2s i) o).
     move=> o'; apply/(tuple_uniqP ord0).
     by move=> i1 i2; rewrite !tnth_map => /(idxa_inj a2s)/o_injective.
   have -> : \sum_(j < n | j != i) tnth a1s j o =
@@ -641,7 +641,7 @@ apply/eqP; rewrite eqn_leq; apply/andP; split.
     by case: ifP => // /slot_not_in ->; rewrite S.last_ctr_eq0 muln0.
   by rewrite leq_bigmax_cond.
 - apply/bigmax_leqP => o _.
-  have ulab : forall o : S.O, (uniq (map_tuple (tnth (tlabel a2s)) o)).
+  have ulab : forall o : Search_as_General.O, (uniq (map_tuple (tnth (tlabel a2s)) o)).
     by move=> o'; exact: (uniq_from_idxa a2s (ouniq o')). 
   have -> : \sum_(j < n | j != i) tnth (instance_biddings a2s) j o =
              \sum_(j < n | j != i) tnth a1s j (Outcome (ulab o), ps0, a2s).
@@ -765,7 +765,7 @@ have Vxo : Vx = [set sval ao].
   by rewrite properEcard cards1 oS/= andbF.
 have SV o : S.bidSum a2s o = VCG.bidSum (fRi a2s) (o2o o).
   by have -> : o = (o2o o).1.1 by []; exact: fRi_bidSum.
-have wino (o : S.O) : o \in Sx -> o \in (fst \o fst) @: Vx.
+have wino (o : Search_as_General.O) : o \in Sx -> o \in (fst \o fst) @: Vx.
   rewrite inE => /andP [_ oxw].
   have -> : o = (fst \o fst) (o2o o) by [].
   rewrite imset_f// inE andTb.
@@ -813,7 +813,7 @@ Lemma fRi_max_bidSum (oS1 : oStars_singleton) : singleton (max_bidSum_spec a2s).
 Proof.
 move=> o1 o2 {o1 o2} [o1 _ x1] [o2 _ x2].
 have o'S (o' : O) : 
-  (∀ j : S.O, predT j -> geq (bidSum a2s o'.1.1) (bidSum a2s j)) -> o' \in VCG.oStars (fRi a2s).
+  (∀ j : Search_as_General.O, predT j -> geq (bidSum a2s o'.1.1) (bidSum a2s j)) -> o' \in VCG.oStars (fRi a2s).
   move=> x'.
   rewrite inE andTb.
   apply/forallP => o.
@@ -884,6 +884,4 @@ End Relational.
 
 Check search_singleton_truthful_rel.
 Print Assumptions search_singleton_truthful_rel.
-
-
 

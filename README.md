@@ -81,10 +81,11 @@ Build the project:
 dune build
 ```
 
-The port is still in progress. At the time of this note, the Nix shell reaches
-Rocq 9.1.1 and MathComp 2.5.0, and compilation progresses through many modules,
-but `dune build` still stops in duplicated proof code in
-`Search_as_General.v` and `VCG_Search_as_General_VCG.v`.
+The current Rocq/MathComp port builds successfully with:
+
+```sh
+nix-shell --run "dune build"
+```
 
 # VS Code
 

@@ -144,7 +144,7 @@ Notation agents := (ord_tuple n).
 
 Definition P := 'I_(p * q).
 
-Definition O := (S.O * k.-tuple P)%type. 
+Definition O := (VCG_Search_as_General_VCG.O * k.-tuple P)%type. 
 
 Definition o0 : O := (S.o0, [tuple ord0 | s < k]).
 
@@ -188,7 +188,7 @@ Definition A1 := {f : {ffun O1 -> nat} | G_bound f}.
 
 Definition f_of_a1 := (@proj1_sig _ G_bound).
 
-Definition S_f_of_a1 (a1 : A1) := [ffun o : S.O => f_of_a1 a1 (o, o0.2)].
+Definition S_f_of_a1 (a1 : A1) := [ffun o : VCG_Search_as_General_VCG.O => f_of_a1 a1 (o, o0.2)].
 
 Notation A1s := (n.-tuple A1). 
 
@@ -233,8 +233,8 @@ Qed.
 
 Lemma truthful_General_VCG : truthful p1. 
 Proof.
-pose v := (fun i => [ffun o : S.O => v2 i * 'ctr_(slot_of i o)]).
-move: (@G.truthful_General_VCG [the finType of S.O] S.o0 v) => G_truth bs bs' i d av.  
+pose v := (fun i => [ffun o : VCG_Search_as_General_VCG.O => v2 i * 'ctr_(slot_of i o)]).
+move: (@G.truthful_General_VCG [the finType of VCG_Search_as_General_VCG.O] S.o0 v) => G_truth bs bs' i d av.  
 have df : differ_on (map_tuple S_f_of_a1 bs) (map_tuple S_f_of_a1 bs') i.
   move=> j nji.
   rewrite /differ_on /action_on in d *.  
@@ -296,7 +296,7 @@ End Relations.
 
 Notation diff_last o1 o2 := (forall s : slot, s != last_slot -> tnth o1 s = tnth o2 s).
 
-Lemma max_bidSum_diff_last (a2s : A2s) (o1 o : S.O) (d : diff_last o o1 ) :
+Lemma max_bidSum_diff_last (a2s : A2s) (o1 o : VCG_Search_as_General_VCG.O) (d : diff_last o o1 ) :
   max_bidSum_spec a2s o1 -> max_bidSum_spec a2s o.
 Proof.
 move=> mx1.
@@ -987,10 +987,7 @@ Hypothesis a_single_slot_is_auctionned : S.k' = 0.
 
 Hypothesis max_ctr_is_1 : S.q' = 1.
 
-Definition ctr1 : 'I_q.  
-have lt1q : 1 < q by rewrite /q max_ctr_is_1. 
-exact: (Ordinal lt1q).
-Defined.
+Definition ctr1 : 'I_q := inord 1.
 
 Hypothesis all_ctrs_are_1 : forall s, 'ctr_s = ctr1.
 
@@ -1014,35 +1011,27 @@ Definition surplus c := \sum_(i < n) v i * tnth c i.
 
 Definition iw := tnth (tlabel bs) ord0.       (* winning agent in SP. *)
 
-Notation sw := (set_nth 0 [tuple 0 | i < n] iw 1).
+Definition vw : n.-tuple nat := [tuple if i == iw then 1 else 0 | i < n].
 
-Local Lemma szn : size sw = n.
+Local Lemma isCvw : sumn vw = 1. 
 Proof.
-rewrite size_set_nth /= size_map size_enum_ord.
-apply/maxn_idPr.
-exact: ltn_ord.
+  rewrite /vw sumnE (big_nth 0) size_tuple big_mkord.
+  rewrite (bigD1 iw) //= !nth_mktuple ?ltn_ord // eq_refl.
+  rewrite big1 ?addn0 // => i /negbTE niw.
+  by rewrite (@nth_map _ ord0 _ 0) ?size_enum_ord ?ltn_ord //= nth_ord_enum niw.
 Qed.
 
-Definition vw := tcast szn (in_tuple sw).
-
-Definition cw : C.  
-have isCvw : sumn vw = 1. 
-  rewrite val_tcast sumn_set_nthE /sumn size_map /= !(nth_map iw) ?size_enum_ord ?ltn_ord //.
-  rewrite leqNgt ltn_ord /= mul0n subn0 addn0 foldrE (big_nth 0) big_nat.
-  under eq_bigr => i /andP [_ ltin].
-    rewrite (nth_map iw). over.
-    by rewrite size_map in ltin.
-  by rewrite big1_eq.
-exact (new isCvw).
-Defined.
+Definition cw : C := new isCvw.
 
 Lemma eq_surplus : surplus cw = v iw.
 Proof.
-rewrite /surplus /cw /welfare /OStar.welfare /bidding /t_bidding /bid_in.
-rewrite (@bigD1 _ _ _ _ iw) //= (@tnth_nth _ _ 0) val_tcast /= nth_set_nth /= eq_refl muln1.
+rewrite /surplus /welfare /OStar.welfare /bidding /t_bidding /bid_in.
+have cw_i (i : A) : tnth cw i = (if i == iw then 1 else 0).
+  by rewrite /cw /= /vw (@tnth_nth _ _ 0) /= nth_mktuple ?ltn_ord.
+rewrite (@bigD1 _ _ _ _ iw) //= cw_i eq_refl muln1.
 under eq_bigr => i ltin.
-  rewrite (@tnth_nth _ _ 0) val_tcast /= nth_set_nth /= ifF /=; last exact: negbTE.
-  rewrite (nth_map ord0) ?muln0 ?size_enum_ord ?ltn_ord //=. 
+  rewrite cw_i ifF /=; last exact: negbTE.
+  rewrite muln0. 
   by over => //=.
 by rewrite big1_eq addn0. 
 Qed.
@@ -1052,9 +1041,11 @@ Lemma surplus_is_VCG_max_welfare (tv : tnth bs =1 v) :
 Proof. 
 rewrite eq_surplus /OStar.max_welfare /OStar.welfare /bidding /t_bidding /OStar.oStar /=.
 under [RHS]eq_bigr => s _.
-  rewrite ffunE /= mem_tnth /bid_in all_ctrs_are_1 muln1 /OStar.t_oStar tnth_map.
-  rewrite -(labelling_spec_idxa bs) (cancel_inv_idxa bs) tnth_ord_tuple.
-  over.
+  rewrite ffunE /= mem_tnth /bid_in all_ctrs_are_1 /ctr1 /= inordK ?muln1.
+    rewrite /OStar.t_oStar tnth_map.
+    rewrite -(labelling_spec_idxa bs) (cancel_inv_idxa bs) tnth_ord_tuple.
+    over.
+  by rewrite /q max_ctr_is_1.
 have -> : \sum_(s < k) tnth [tuple of sort geq_bid bs] (slot_as_agent s) =
          \sum_(0 <= s < k) tnth [tuple of sort geq_bid bs] (inord s). 
   rewrite big_mkord; apply: eq_bigr => s _ /=. 

@@ -1370,8 +1370,8 @@ rewrite eq_welfare_without_i''_bidSum' /bidSum' /G.bidSum.
 rewrite bidsSum_sumBid -valid_bidSum bidSum_slot.
 apply: eq_bigr => j _.
 rewrite /bidding ffunE /bidding /t_bidding /bid_ctr_slot !tnth_map !tnth_ord_tuple.
-- have [] := boolP (widen_ord le_k_n j \in oStar_i) => jin.  
-  congr ('bid_ _ * 'ctr_ _); first by [].
+  - have [] := boolP (widen_ord le_k_n j \in oStar_i) => jin.  
+  congr ('bid_ _ * 'ctr_ _).
   rewrite (@slot_in_oStar bs0) //.
   apply: val_inj => /=.
   by rewrite inordK.
