@@ -444,7 +444,7 @@ congr (_ + _).
 - rewrite (big_pred1 (inord (i - m))) // => s.
   rewrite andb_idl /= => [|/eqP ->]; last by rewrite subnSK ?leqnn ?leq_subr.
   congr (_ == _). 
-  by rewrite inordK.
+	  exact: esym (inordK ltimk1).
 Qed.
 
 Lemma big_shrinkl m F i i' (lti'i : i' < i) : 
@@ -463,7 +463,7 @@ apply: eq_bigl => s.
 rewrite -andbA.
 congr (_ && _).
 have -> /= : (s != inord (i + m.+1)) = (val s != i + m.+1). 
-  by move: s => [s p']; rewrite -(inj_eq val_inj) /= inordK.
+	  by move: s => [s p']; rewrite -(inj_eq val_inj) /= (inordK ltim1p1).
 by rewrite leq_eqVlt andb_orl andbN orFb addnS ltnS andb_idr // -ltnS => /ltn_eqF /negbT.
 Qed.
 
@@ -577,8 +577,8 @@ Lemma telescope_addn n m f :
   n <= m -> {in [pred i | n <= i <= m] &, {homo f : x y /~ x <= y}} ->
   \sum_(n <= k < m) (f k - f k.+1) = f n - f m.
 Proof.
-pose tadd := @telescope_op nat 0 addn_monoid => lenm lef.
-have ssub : shrink addn_monoid (fun p q => f p - f q) n m.
+pose tadd := @telescope_op nat 0 addn => lenm lef.
+have ssub : shrink addn (fun p q => f p - f q) n m.
   move=> p q r /= /andP [/ltnW lepq /ltnW leqr] [lenp lerm].  
   have lenqm : n <= q <= m. 
     rewrite (leq_trans _ (leq_trans leqr lerm)) //.
@@ -656,7 +656,7 @@ have [lbl h_perm h_idx] := perm_iota_sort leT x t.
 have lbl_tuple: size (map (@inord n) lbl) == n.+1.
   by rewrite size_map (perm_size h_perm) size_iota size_tuple.
 exists (Tuple lbl_tuple).
-rewrite h_idx -map_comp -eq_in_map => z.
+  rewrite h_idx -map_comp; apply/eq_in_map => z.
 rewrite (perm_mem h_perm) mem_iota add0n size_tuple /= => h_mem.
 by rewrite (tnth_nth x) inordK.
 Qed.
@@ -800,7 +800,7 @@ Fixpoint tswap (t : k.+1.-tuple 'I_m.+1) (i1i2s : seq ('I_k.+1 * 'I_k.+1)) :=
   match i1i2s with
   | [::] => (true, t)
   | i1i2 :: i1i2s' => let bt' := 
-                      tswap (aperm t (itperm [finType of 'I_m.+1] i1i2.1 i1i2.2)) i1i2s' in
+                      tswap (aperm t (itperm _ i1i2.1 i1i2.2)) i1i2s' in
              (tuple_is_bubble t i1i2 && bt'.1, bt'.2)
   end.
 
@@ -947,7 +947,7 @@ Section UniqBubbleSort.
 
 Variable (k m : nat).
 
-Notation T := [finType of 'I_m.+1].
+Notation T := 'I_m.+1.
 
 Definition uniq_up_sorted_tuple (t : k.+1.-tuple T) :=
   forall (s1 s2 : 'I_k.+1), s1 < s2 -> tnth t s1 < tnth t s2.

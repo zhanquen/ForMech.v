@@ -5,4 +5,5 @@
    :standard
    -w -notation-overridden
    -w -local-declaration
+   -w -declaration-outside-section
    -w -ambiguous-paths))

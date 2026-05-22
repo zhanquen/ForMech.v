@@ -1,0 +1,95 @@
+Work report: Rocq/mathcomp port
+
+- Cloned upstream https://github.com/jouvelot/mech.v.git into /Users/jingzhan/mech.v-rocq.
+- Created local branch rocq-mathcomp-latest for the porting work.
+- Confirmed authenticated GitHub access to jouvelot/mech.v is read-only, so direct upstream branch creation is not available.
+- Baseline nix-shell from the original repository resolves to Coq 8.13.2, while README says the code was tested with Coq 8.17 and mathcomp 1.17.
+- Targeting the newest currently compatible Rocq/mathcomp line with minimal source edits required for compatibility.
+- Updated default.nix to fetch rocq-community/coq-nix-toolbox instead of the old coq-community URL.
+- Updated .nix/coq-nix-toolbox.nix to the current master revision d921f75bfe32430a3bbbac9e2a7f9c5781596830.
+- Replaced the old Coq 8.13/8.14/8.15 bundles with one default bundle targeting Rocq 9.1 and mathcomp 2.5.0.
+- Rocq 9.2.0 is present in the current nixpkgs pin, but MathComp 2.5.0 has a published upper bound below Rocq 9.2, so the port targets Rocq 9.1 as the newest compatible line.
+- Updated opam dependencies from coq/coq-mathcomp-* to rocq-core/rocq-mathcomp-* packages.
+- Added the Rocq compatibility "coq" package and the concrete MathComp ssreflect/algebra/fingroup components to Nix buildInputs because Dune's coq.theory support still invokes coqdep/coqc command names and needs these libraries on the loadpath.
+- Added -w -declaration-outside-section to all coq.theory stanzas to preserve the old top-level Variable behavior accepted by prior Coq versions.
+- Updated inordK uses in mech/lib.v to pass existing bounds explicitly, matching MathComp 2.x behavior.
+- Replaced the removed addn_monoid short name with the canonical addn monoid law in mech/lib.v.
+- Changed one eq_in_map rewrite in mech/lib.v into an explicit application, as MathComp 2.x no longer exposes it as a direct rewrite rule.
+- Replaced one old explicit [finType of ...] argument with an inferred argument in mech/lib.v to satisfy Rocq 9.1 parsing.
+- Replaced a local [finType of ...] notation with the underlying ordinal type in mech/lib.v; canonical finType inference still supplies the structure where needed.
+- Added rocq-stdlib/stdlib to opam and Nix inputs so Rocq's Stdlib logical root is available after the Coq-to-Stdlib rename.
+- Simplified cancel_idxa in mech/labelling.v to use the witness equality directly instead of a dependent rewrite that Rocq 9.1 rejects.
+- Rewrote two slot_as_agent_inj proofs to extract value equality explicitly before applying val_inj.
+- Replaced manual ordinal widening in slot_as_agent with MathComp's widen_ord to avoid proof-term equality issues in Rocq 9.1.
+- Replaced old Canonical subtype declarations for Combinatorial_VCG.O with the MathComp 2 HB [isSub for b] instance.
+- Replaced two additional old Canonical subtype declaration blocks with MathComp 2 HB [isSub for obidders] instances.
+- Added explicit HB [Finite of O by <:] instances for finite subtype records whose old Canonical finType declarations were removed.
+- Restored the local O_finType aliases using MathComp 2's [the finType of O] notation for later explicit arguments.
+- Updated remaining MathComp packed-class references from [eqType/finType of ...] to [the eqType/finType of ...] notation.
+- Replaced a removed ordinal_finType reference with 'I_k and simplified two widen_slot_as_agent proof uses after slot_as_agent became definitionally widen_ord.
+- Current build status: nix-shell reaches Rocq 9.1.1/mathcomp 2.5.0 and compiles many modules, but dune build still stops in Search_as_General.v and VCG_Search_as_General_VCG.v at the duplicated bid/ctr equality proof around the former widen_slot_as_agent step.
+
+How to open and modify this repo
+
+From a terminal:
+
+  cd /Users/jingzhan/mech.v-rocq
+
+Enter the Rocq/mathcomp shell:
+
+  nix-shell
+
+Check the active tools:
+
+  rocq --version
+  coqc --version
+  dune --version
+
+Build from inside the shell:
+
+  dune build
+
+Open an editor from the reproducible shell with Emacs and Proof General:
+
+  nix-shell --arg withEmacs true --run "emacs mech/lib.v"
+
+or open the repo root:
+
+  nix-shell --arg withEmacs true --run "emacs ."
+
+The first Emacs/Proof General run may take several minutes because Nix can need to build or download editor packages.
+
+RocqIDE note:
+
+- I checked the current Nix shell and it provides rocq and coqc, but not a GUI rocqide or coqide binary. It does provide the command-line Coq/Rocq tools needed by Dune and editor integrations.
+- If a future Nix package set exposes RocqIDE/CoqIDE, try one of:
+
+  nix-shell --run "rocqide mech/lib.v"
+  nix-shell --run "coqide mech/lib.v"
+
+- For this repo today, use Emacs + Proof General through nix-shell --arg withEmacs true.
+
+VS Code setup for Rocq/mathcomp
+
+- Added repo-local VS Code configuration under .vscode/.
+- Installed the VS Code extension ejgallego.coq-lsp.
+- Added .vscode/coq-lsp-nix.sh so the Coq LSP server starts through this repo's nix-shell and therefore sees Rocq, MathComp, and the Dune loadpath.
+- Added .vscode/settings.json with a repo-local wrapper path. The extension did not expand ${workspaceFolder} in this VS Code extension version, so the portable setting avoids that variable:
+
+  "coq-lsp.path": ".vscode/coq-lsp-nix.sh"
+
+- Updated the wrapper to use nix-shell --option warn-dirty false so Nix does not print the dirty Git tree warning while VS Code is starting the language server.
+
+- Added .vscode/tasks.json tasks:
+
+  Rocq: dune build
+  Rocq: tool versions
+
+- Recommended using the Coq LSP extension for this workspace and avoiding older Coq/Rocq VS Code extensions at the same time, since multiple proof extensions can try to control the same .v file.
+
+Open with VS Code:
+
+  cd /Users/jingzhan/mech.v-rocq
+  code .
+
+Then open a .v file, for example mech/lib.v. VS Code should start coq-lsp through nix-shell automatically. Use Terminal > Run Task... > Rocq: dune build to build from the same environment.

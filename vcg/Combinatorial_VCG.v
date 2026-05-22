@@ -19,6 +19,7 @@
 
 *)
 
+From HB Require Import structures.
 From mathcomp Require Import all_ssreflect.
 
 From mech.lib Require Import mech.
@@ -58,13 +59,8 @@ Qed.
 Lemma subpartition (o : O) : \bigcup_(i < n) tnth o i \subset endowment.
 Proof. by case: o => [? /= /andP [s _]]. Qed.
 
-Canonical O_subType := Eval hnf in [subType for b].
-Canonical O_eqType := Eval hnf in EqType _ [eqMixin     of O by <:].
-Canonical O_choiceType := Eval hnf in ChoiceType _ [choiceMixin of O by <:].
-Canonical O_countType := Eval hnf in CountType _ [countMixin  of O by <:].
-Canonical O_subCountType := Eval hnf in [subCountType of O].
-Canonical O_finType := Eval hnf in FinType _ [finMixin    of O by <:].
-Canonical O_subFinType := Eval hnf in [subFinType of O].
+#[export] HB.instance Definition _ := [isSub for b].
+#[export] HB.instance Definition _ := [Finite of O by <:].
 
 Definition o0 : O.
 pose b0 : bundle := [tuple set0 | i < n].
@@ -75,7 +71,7 @@ have pd0: subpartition' b0 && disjoint' b0.
 exact: Outcome pd0.
 Defined.
 
-Definition m := VCG.m o0.
+Definition m := @VCG.m [the finType of O] o0.
 
 Variable (v : n.-tuple A).
 

@@ -1,0 +1,10 @@
+{
+  "recommendations": [
+    "ejgallego.coq-lsp"
+  ],
+  "unwantedRecommendations": [
+    "coq-community.vscoq1",
+    "maximedenes.vscoq",
+    "rocq-prover.vsrocq"
+  ]
+}

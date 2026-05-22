@@ -180,7 +180,7 @@ Definition p2 : prefs.type m2 :=
 
 (* Mech1 = General VCG *)
 
-Definition O1 := [finType of O].
+Definition O1 := [the finType of O].
 
 Definition G_bound (a1 : {ffun O1 -> nat}) := forall o, a1 o < p * q. (* rationality *)
 
@@ -234,7 +234,7 @@ Qed.
 Lemma truthful_General_VCG : truthful p1. 
 Proof.
 pose v := (fun i => [ffun o : S.O => v2 i * 'ctr_(slot_of i o)]).
-move: (@G.truthful_General_VCG [finType of S.O] S.o0 v) => G_truth bs bs' i d av.  
+move: (@G.truthful_General_VCG [the finType of S.O] S.o0 v) => G_truth bs bs' i d av.  
 have df : differ_on (map_tuple S_f_of_a1 bs) (map_tuple S_f_of_a1 bs') i.
   move=> j nji.
   rewrite /differ_on /action_on in d *.  

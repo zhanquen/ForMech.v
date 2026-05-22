@@ -5,7 +5,8 @@
   ## to another supported format.
 
   ## The attribute to build from the local sources,
-  ## either using nixpkgs data or the overlays located in `.nix/coq-overlays`
+  ## either using nixpkgs data or the overlays located in `.nix/rocq-overlays`
+  ## and `.nix/coq-overlays`
   ## Will determine the default main-job of the bundles defined below
   attribute = "mech";
 
@@ -23,7 +24,13 @@
   ## known dependencies, if any more than Coq.
   ## /!\ Remove this field as soon as the package is available on nixpkgs.
   ## /!\ Manual overlays in `.nix/coq-overlays` should be preferred then.
-  # buildInputs = [ ];
+  buildInputs = [
+    "coq"
+    "stdlib"
+    "mathcomp-ssreflect"
+    "mathcomp-algebra"
+    "mathcomp-fingroup"
+  ];
 
   ## Indicate the relative location of your _CoqProject
   ## If not specified, it defaults to "_CoqProject"
@@ -31,66 +38,17 @@
 
   ## select an entry to build in the following `bundles` set
   ## defaults to "default"
-  default-bundle = "8.13-1.12";
+  default-bundle = "rocq-9.1-mathcomp-2.5";
 
   ## write one `bundles.name` attribute set per
   ## alternative configuration
   ## When generating GitHub Action CI, one workflow file
   ## will be created per bundle
-  bundles."8.13-1.12" = {
-
-    ## You can override Coq and other Coq coqPackages
-    ## through the following attribute
-    coqPackages.coq.override.version = "8.13";
-    coqPackages.mathcomp.override.version = "1.12";
-  };
-
-  bundles."8.13-1.13" = {
-    coqPackages.coq.override.version = "8.13";
-    coqPackages.mathcomp.override.version = "1.13";
-  };
-
-  bundles."8.14" = {
-    coqPackages.coq.override.version = "8.14";
-  };
-
-  bundles."8.15" = {
-    coqPackages.coq.override.version = "8.15";
-
-    ## In some cases, light overrides are not available/enough
-    ## in which case you can use either
-    # coqPackages.<coq-pkg>.overrideAttrs = o: <overrides>;
-    ## or a "long" overlay to put in `.nix/coq-overlays
-    ## you may use `nix-shell --run fetchOverlay <coq-pkg>`
-    ## to automatically retrieve the one from nixpkgs
-    ## if it exists and is correctly named/located
-
-    ## You can override Coq and other coqPackages
-    ## through the following attribute
-    ## If <ocaml-pkg> does not support light overrides,
-    ## you may use `overrideAttrs` or long overlays
-    ## located in `.nix/ocaml-overlays`
-    ## (there is no automation for this one)
-    #  ocamlPackages.<ocaml-pkg>.override.version = "x.xx";
-
-    ## You can also override packages from the nixpkgs toplevel
-    # <nix-pkg>.override.overrideAttrs = o: <overrides>;
-    ## Or put an overlay in `.nix/overlays`
-
-    ## you may mark a package as a main CI job (one to take deps and
-    ## rev deps from) as follows
-    # coqPackages.<main-pkg>.main-job = true;
-    ## by default the current package and its shell attributes are main jobs
-
-    ## you may mark a package as a CI job as follows
-    #  coqPackages.<another-pkg>.job = "test";
-    ## It can then built through
-    ## nix-build --argstr bundle "default" --arg job "test";
-    ## in the absence of such a directive, the job "another-pkg" will
-    ## is still available, but will be automatically included in the CI
-    ## via the command genNixActions only if it is a dependency or a
-    ## reverse dependency of a job flagged as "main-job" (see above).
-
+  bundles."rocq-9.1-mathcomp-2.5" = {
+    ## Current Rocq and Mathematical Components line.
+    ## MathComp 2.5.0 supports Rocq 9.0 and 9.1, not Rocq 9.2.
+    rocqPackages.rocq-core.override.version = "9.1";
+    rocqPackages.mathcomp.override.version = "2.5.0";
   };
 
   ## Cachix caches to use in CI

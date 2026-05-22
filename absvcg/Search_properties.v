@@ -375,7 +375,7 @@ Notation A2s := (n.-tuple A2).
 
 Definition a2s0 : A2s := mktuple (fun b => S.bid0).
 
-Definition O := [finType of (S.O * k.-tuple P * A2s)].
+Definition O := [the finType of (S.O * k.-tuple P * A2s)].
 
 Definition o2o (o : S.O) : O := ((o, mktuple (fun p => ord0)), mktuple (fun b => bid0)).
 

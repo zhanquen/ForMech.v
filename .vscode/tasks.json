@@ -1,0 +1,18 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Rocq: dune build",
+      "type": "shell",
+      "command": "nix-shell --run \"dune build\"",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Rocq: tool versions",
+      "type": "shell",
+      "command": "nix-shell --run \"rocq --version && coqc --version && dune --version\"",
+      "problemMatcher": []
+    }
+  ]
+}

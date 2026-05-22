@@ -175,14 +175,12 @@ Qed.
  Note we could make positions and agents different, the current type
  seems a bit weird. *)
 
-Definition idxa (i : 'I_n.+1) : 'I_n.+1.
-by have [i' _] := sorted_diff_agent_spec_ex i; exact: i'.
-Defined.
+Definition idxa (i : 'I_n.+1) : 'I_n.+1 :=
+  proj1_sig (sorted_diff_agent_spec_ex i).
 
 Lemma cancel_idxa : cancel idxa (tnth tlabel).
 Proof.
-rewrite /idxa /sval => j.
-by case: sorted_diff_agent_spec_ex => j' <-.
+by rewrite /idxa => j; exact: proj2_sig (sorted_diff_agent_spec_ex j).
 Qed.
 
 Lemma cancel_inv_idxa : cancel (tnth tlabel) idxa.

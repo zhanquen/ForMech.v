@@ -33,6 +33,7 @@
 
 
 From Coq Require Import Init.Prelude Unicode.Utf8.
+From HB Require Import structures.
 From mathcomp Require Import all_ssreflect order.
 
 From mathcomp.fingroup Require Import perm.
@@ -80,16 +81,13 @@ Definition slot_succ (s : slot) : slot := ord_succ s.
 
 Definition last_slot : slot := ord_max.
 
-Definition slot_as_agent (s : slot) : A.
-have slot_as_agent_p : s < n by exact: leq_trans (ltn_ord s) le_k_n.
-exact: (Ordinal slot_as_agent_p).
-Defined.
+Definition slot_as_agent (s : slot) : A := widen_ord le_k_n s.
 
 Lemma slot_as_agent_inj : injective slot_as_agent.
 Proof.
-move=> s1 s2 /eqP.
-rewrite /slot_as_agent /sval -(inj_eq val_inj) /= => /eqP.
-exact: val_inj.
+move=> s1 s2 H.
+apply: val_inj.
+exact: (congr1 val H).
 Qed.
 
 End Slot.
@@ -205,13 +203,9 @@ Defined.
 Coercion obidders : O >-> tuple_of.
 
 (* new type O, most of time a tuple is used, so i want it coercion automatic towards tuple *)
-Canonical O_subType := Eval hnf in [subType for obidders].
-Canonical O_eqType := Eval hnf in EqType _ [eqMixin     of O by <: ].
-Canonical O_choiceType := Eval hnf in ChoiceType _ [choiceMixin of O by <:].
-Canonical O_countType := Eval hnf in CountType _ [countMixin  of O by <:].
-Canonical O_subCountType := Eval hnf in [subCountType of O].
-Canonical O_finType := Eval hnf in FinType _ [finMixin    of O by <:].
-Canonical O_subFinType := Eval hnf in [subFinType of O].
+#[export] HB.instance Definition _ := [isSub for obidders].
+#[export] HB.instance Definition _ := [Finite of O by <:].
+Definition O_finType := [the finType of O].
 
 (* mathcomp system, complementary O_finType *)
 
@@ -804,7 +798,7 @@ Qed.
 
 Definition VCG_oStar := VCG.sig_OStar HoStar.
 
-Definition max_bidSum_spec := (@extremum_spec [eqType of nat] geq O_finType predT bidSum).
+Definition max_bidSum_spec := (@extremum_spec nat geq O_finType predT bidSum).
 
 Lemma VCG_oStar_extremum : max_bidSum_spec (sval VCG_oStar).
 Proof.
@@ -1288,7 +1282,7 @@ rewrite bidsSum_sumBid -valid_bidSum bidSum_slot.
 apply: eq_bigr => j _.
 rewrite /bidding ffunE /bidding /t_bidding /bid_ctr_slot !tnth_map !tnth_ord_tuple.
 - have [] := boolP (widen_ord le_k_n j \in oStar_i) => jin.  
-  congr ('bid_ _ * 'ctr_ _); first by exact: widen_slot_as_agent.
+  congr ('bid_ _ * 'ctr_ _); first by [].
   rewrite (@slot_in_oStar bs0) //.
   apply: val_inj => /=.
   by rewrite inordK.
@@ -1978,5 +1972,3 @@ End VCGforSearchPrice.
 
 Check eq_instance_VCG_price.  
 Print Assumptions eq_instance_VCG_price.
-
-
